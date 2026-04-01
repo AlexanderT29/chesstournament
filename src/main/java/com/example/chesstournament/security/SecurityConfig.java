@@ -40,16 +40,16 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/login", "/auth/register").permitAll()
+                        .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
 
                         // Endpoint per ADMIN (Gestione Utenti)
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
                         // Endpoint per Gestione Tornei (ADMIN e ORGANIZER)
-                        .requestMatchers("/tornei/**").hasAnyRole("ADMIN", "ORGANIZER")
+                        .requestMatchers("/api/tornei/**").hasAnyRole("ADMIN", "ORGANIZER")
 
                         // Endpoint per i giocatori (Play Management)
-                        .requestMatchers("/play/**").hasRole("PLAYER")
+                        .requestMatchers("/api/play/**").hasRole("PLAYER")
 
                         // Tutto il resto deve essere autenticato
                         .anyRequest().authenticated()

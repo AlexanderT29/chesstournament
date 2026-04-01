@@ -93,6 +93,17 @@ public class Utente {
         this.stato = stato;
     }
 
+    public Utente(String nome, String cognome, String username, String password, LocalDate dataRegistrazione) {
+        this.nome = nome;
+        this.cognome = cognome;
+        this.username = username;
+        this.password = password;
+        this.dataRegistrazione = dataRegistrazione;
+        this.eloRating = 0;
+        this.montePremi = 0.0;
+        this.stato = StatoUtente.ATTIVO;
+    }
+
     public Long getId() {
         return id;
     }

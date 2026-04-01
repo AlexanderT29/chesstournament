@@ -17,8 +17,8 @@ public interface UtenteRepository extends JpaRepository<Utente, Long> {
     public Optional<Utente> findByIdConRuoli(Long id);
 
     @EntityGraph(attributePaths = { "ruoli" })
-    Utente findByUsernameAndPasswordAndStato(String username,String password, StatoUtente stato);
+    public Utente findByUsernameAndPasswordAndStato(String username,String password, StatoUtente stato);
 
     @Query("from Utente u  left join fetch u.torneiCreati where u.id = ?1")
-    Optional<Utente> findUtenteConTornei(Long id);
+    public Optional<Utente> findUtenteConTornei(Long id);
 }

@@ -4,6 +4,10 @@ import com.example.chesstournament.model.Ruolo;
 import com.example.chesstournament.model.StatoUtente;
 import com.example.chesstournament.model.Utente;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
@@ -13,13 +17,29 @@ import java.util.stream.Collectors;
 public class UtenteGestionaleDTO {
 
     private Long id;
+
+    @NotBlank(message = "Il nome non può essere vuoto")
     private String nome;
+
+    @NotBlank(message = "Il cognome non può essere vuoto")
     private String cognome;
+
+    @NotBlank(message = "L'username non può essere vuoto")
+    @Size(min = 3, max = 20, message = "L'username deve essere tra {min} e {max} caratteri")
     private String username;
+
+
     private LocalDate dataRegistrazione;
+
     private StatoUtente stato;
+
+    @Min(value = 0, message = "L'ELO rating non può essere negativo")
     private Integer eloRating;
+
+    @Min(value = 0, message = "Il montepremi non può scendere sotto lo zero")
     private Double montePremi;
+
+
     private Long[] ruoliIds;
 
 
