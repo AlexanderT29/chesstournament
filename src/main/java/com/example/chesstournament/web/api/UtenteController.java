@@ -3,10 +3,13 @@ package com.example.chesstournament.web.api;
 import com.example.chesstournament.dto.RicaricaDTO;
 import com.example.chesstournament.dto.TorneoDTO;
 import com.example.chesstournament.model.Ruolo;
+import com.example.chesstournament.model.StatoUtente;
 import com.example.chesstournament.model.Utente;
 import com.example.chesstournament.security.dto.ResponseBusta;
 import com.example.chesstournament.security.dto.UtenteInfoJWTResponseDTO;
 import com.example.chesstournament.service.UtenteService;
+import com.example.chesstournament.web.api.exception.Forbidden403Exception;
+import com.example.chesstournament.web.api.exception.NotFound404Exception;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -31,8 +34,7 @@ public class UtenteController {
         Utente utenteLoggato = service.cercaPerUsername(username).orElse(null);
 
         if (utenteLoggato == null) {
-            return ResponseEntity.status(404)
-                    .body(ResponseBusta.error(404, "Utente non trovato nel database"));
+            throw new NotFound404Exception("Utente non trovato.");
         }
 
         List<String> roles = utenteLoggato.getRuoli().stream()
@@ -63,15 +65,13 @@ public class UtenteController {
     public ResponseEntity<ResponseBusta<UtenteInfoJWTResponseDTO>> ricaricaMontePremi(@Valid @RequestBody RicaricaDTO ricarica){
 
         if(ricarica == null){
-            return ResponseEntity.status(404)
-                    .body(ResponseBusta.error(404, "La ricarica è vuota!"));
+            throw new NotFound404Exception("Ricarica non trovata");
         }
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         Utente utenteLoggato = service.cercaPerUsername(username).orElse(null);
 
         if (utenteLoggato == null) {
-            return ResponseEntity.status(404)
-                    .body(ResponseBusta.error(404, "Utente non trovato"));
+            throw new NotFound404Exception("Utente non trovato.");
         }
 
         utenteLoggato.setMontePremi(utenteLoggato.getMontePremi() + ricarica.getImporto());
@@ -86,6 +86,26 @@ public class UtenteController {
         );
 
         return ResponseEntity.ok(ResponseBusta.success(200, responseDTO, "Ricarica effettuata con successo!"));
+    }
+
+    @PutMapping("/disabilita/{id}")
+    public ResponseEntity<ResponseBusta<UtenteInfoJWTResponseDTO>> disabilitaUtente(@PathVariable("id") Long id){
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        Utente utenteLoggato = service.cercaPerUsername(username).orElse(null);
+
+        if (utenteLoggato == null) {
+            throw new NotFound404Exception("Utente non trovato.");
+        }
+
+        if(utenteLoggato.getId() != id || !utenteLoggato.getRuoli().contains(Ruolo.ROLE_ADMIN)){
+            throw new Forbidden403Exception("Permessi negati per eseguire questa operazione.");
+        }
+
+        utenteLoggato.setStato(StatoUtente.DISABILITATO);
+
+        service.aggiorna(utenteLoggato);
+
+        return ResponseEntity.accepted().body(ResponseBusta.success(200, null, "Utente disabilitato con successo"));
     }
 
 }

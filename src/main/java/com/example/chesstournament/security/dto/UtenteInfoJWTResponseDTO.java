@@ -47,6 +47,12 @@ public class UtenteInfoJWTResponseDTO {
         this.montePremi = montePremi;
     }
 
+    public UtenteInfoJWTResponseDTO(String nome, String cognome, String username) {
+        this.nome = nome;
+        this.cognome = cognome;
+        this.username = username;
+    }
+
     public String getUsername() {
         return username;
     }
