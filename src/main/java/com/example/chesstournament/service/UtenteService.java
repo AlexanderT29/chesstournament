@@ -14,5 +14,7 @@ public interface UtenteService {
 
     public Optional<Utente> cercaPerUsername(String username);
 
+    public Utente aggiorna(Utente utenteAggiornato);
+
 
 }

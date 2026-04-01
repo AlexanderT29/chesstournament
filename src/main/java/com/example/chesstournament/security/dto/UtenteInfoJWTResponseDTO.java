@@ -1,37 +1,50 @@
 package com.example.chesstournament.security.dto;
 
-import java.util.List;
+import com.example.chesstournament.dto.TorneoDTO;
+import com.example.chesstournament.model.Torneo;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
+import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class UtenteInfoJWTResponseDTO {
     private String nome;
     private String cognome;
-    private String type = "Bearer";
     private String username;
-    private String email;
+    private LocalDate dataRegistrazione;
     private List<String> roles;
+    private TorneoDTO torneo;
+    private Integer eloRating;
+    private Double montePremi;
+
 
     public UtenteInfoJWTResponseDTO(String nome, String cognome, String username, String email, List<String> roles) {
         this.nome = nome;
         this.cognome = cognome;
         this.username = username;
-        this.email = email;
         this.roles = roles;
     }
 
-    public String getTokenType() {
-        return type;
+
+    public UtenteInfoJWTResponseDTO(String nome, String cognome, String username, LocalDate dataRegistrazione, List<String> roles, TorneoDTO torneo, Integer eloRating, Double montePremi) {
+        this.nome = nome;
+        this.cognome = cognome;
+        this.username = username;
+        this.dataRegistrazione = dataRegistrazione;
+        this.roles = roles;
+        this.torneo = torneo;
+        this.eloRating = eloRating;
+        this.montePremi = montePremi;
     }
 
-    public void setTokenType(String tokenType) {
-        this.type = tokenType;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
+    public UtenteInfoJWTResponseDTO(String nome, String cognome, String username, Double montePremi) {
+        this.nome = nome;
+        this.cognome = cognome;
+        this.username = username;
+        this.montePremi = montePremi;
     }
 
     public String getUsername() {
@@ -60,5 +73,41 @@ public class UtenteInfoJWTResponseDTO {
 
     public void setCognome(String cognome) {
         this.cognome = cognome;
+    }
+
+    public LocalDate getDataRegistrazione() {
+        return dataRegistrazione;
+    }
+
+    public void setDataRegistrazione(LocalDate dataRegistrazione) {
+        this.dataRegistrazione = dataRegistrazione;
+    }
+
+    public void setRoles(List<String> roles) {
+        this.roles = roles;
+    }
+
+    public TorneoDTO getTorneo() {
+        return torneo;
+    }
+
+    public void setTorneo(TorneoDTO torneo) {
+        this.torneo = torneo;
+    }
+
+    public Integer getEloRating() {
+        return eloRating;
+    }
+
+    public void setEloRating(Integer eloRating) {
+        this.eloRating = eloRating;
+    }
+
+    public Double getMontePremi() {
+        return montePremi;
+    }
+
+    public void setMontePremi(Double montePremi) {
+        this.montePremi = montePremi;
     }
 }

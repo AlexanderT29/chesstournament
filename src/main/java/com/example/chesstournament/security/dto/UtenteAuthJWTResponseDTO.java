@@ -1,20 +1,27 @@
 package com.example.chesstournament.security.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import java.util.List;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class UtenteAuthJWTResponseDTO {
 
     private String token;
-    private String type = "Bearer";
+    private String type;
     private String username;
-    private String email;
     private List<String> roles;
 
-    public UtenteAuthJWTResponseDTO(String accessToken, String username, String email, List<String> roles) {
+    public UtenteAuthJWTResponseDTO(String accessToken, String username, List<String> roles) {
         this.token = accessToken;
         this.username = username;
-        this.email = email;
         this.roles = roles;
+        this.type = "Bearer";
+    }
+
+    public UtenteAuthJWTResponseDTO(String token, String username) {
+        this.token = token;
+        this.username = username;
     }
 
     public String getAccessToken() {
@@ -33,13 +40,6 @@ public class UtenteAuthJWTResponseDTO {
         this.type = tokenType;
     }
 
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
 
     public String getUsername() {
         return username;

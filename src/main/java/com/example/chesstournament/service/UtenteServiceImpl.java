@@ -6,11 +6,13 @@ import com.example.chesstournament.repository.UtenteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@Transactional(readOnly = true)
 public class UtenteServiceImpl implements UtenteService{
 
     @Autowired
@@ -25,6 +27,7 @@ public class UtenteServiceImpl implements UtenteService{
     }
 
     @Override
+    @Transactional
     public Utente inserisciNuovo(Utente utenteInstance) {
 
         utenteInstance.setPassword(passwordEncoder.encode(utenteInstance.getPassword()));
@@ -36,5 +39,11 @@ public class UtenteServiceImpl implements UtenteService{
     @Override
     public Optional<Utente> cercaPerUsername(String username) {
         return utenteRepository.findByUsername(username);
+    }
+
+    @Override
+    @Transactional
+    public Utente aggiorna(Utente utenteAggiornato) {
+        return utenteRepository.save(utenteAggiornato);
     }
 }
