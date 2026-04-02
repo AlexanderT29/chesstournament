@@ -17,4 +17,6 @@ public interface TorneoService {
     public Optional<Torneo> cercaTorneoPerId(Long id);
 
     public Torneo aggiorna(Torneo torneo);
+
+    public void cancellaTorneo(Long id);
 }

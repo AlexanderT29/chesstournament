@@ -42,4 +42,10 @@ public class TorneoServiceImpl implements TorneoService{
     public Torneo aggiorna(Torneo torneo) {
         return repository.save(torneo);
     }
+
+    @Override
+    @Transactional
+    public void cancellaTorneo(Long id) {
+        repository.deleteById(id);
+    }
 }

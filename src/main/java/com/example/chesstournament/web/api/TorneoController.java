@@ -13,6 +13,7 @@ import com.example.chesstournament.web.api.exception.BadRequest400Exception;
 import com.example.chesstournament.web.api.exception.Forbidden403Exception;
 import com.example.chesstournament.web.api.exception.NotFound404Exception;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -148,6 +149,10 @@ public class TorneoController {
         Torneo torneoCercato = torneoService.cercaTorneoPerId(id)
                 .orElseThrow(() -> new NotFound404Exception("Torneo non trovato!"));
 
+        if(torneoCercato.getUtenteCreazione().getId() != utenteLoggato.getId()){
+            throw new Forbidden403Exception("Non puoi modificare un torneo non tuo!");
+        }
+
         if(!torneoCercato.getPartecipanti().isEmpty()){
             throw new Forbidden403Exception("Non puoi modificare un torneo se ha dei partecipanti");
         }
@@ -168,5 +173,42 @@ public class TorneoController {
 
         return ResponseEntity.ok(bustaSuccesso);
     }
+
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ResponseBusta<String>> cancellaTorneo(@PathVariable("id") Long id){
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        Utente utenteLoggato = utenteService.cercaPerUsername(username)
+                .orElseThrow(() -> new NotFound404Exception("Utente non trovato!"));
+
+        List<String> codiciRuoli = utenteLoggato.getRuoli().stream()
+                .map(Ruolo::getCodice)
+                .toList();
+
+        if(!codiciRuoli.contains(Ruolo.ROLE_ORGANIZER) &&
+                !codiciRuoli.contains(Ruolo.ROLE_ADMIN)){
+            throw new Forbidden403Exception("Non hai i permessi per fare questa operazione!");
+        }
+
+        Torneo torneoCercato = torneoService.cercaTorneoPerId(id)
+                .orElseThrow(() -> new NotFound404Exception("Torneo non trovato!"));
+
+        if(torneoCercato.getUtenteCreazione().getId() != utenteLoggato.getId()){
+            throw new Forbidden403Exception("Non puoi modificare un torneo non tuo!");
+        }
+
+        if(!torneoCercato.getPartecipanti().isEmpty()){
+            throw new Forbidden403Exception("Non puoi modificare un torneo se ha dei partecipanti");
+        }
+
+        torneoService.cancellaTorneo(torneoCercato.getId());
+
+        ResponseBusta<String> bustaSuccess = ResponseBusta.success(204, null, "Torneo cancellato con successo");
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(bustaSuccess);
+
+    }
+
+
 
 }
