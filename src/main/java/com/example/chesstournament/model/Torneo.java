@@ -15,7 +15,7 @@ public class Torneo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(name = "denominazione", nullable = false)
+    @Column(name = "denominazione", unique = true, nullable = false)
     private String denominazione;
     @Column(name = "datacreazione")
     private LocalDate dataCreazione;

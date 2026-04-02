@@ -16,5 +16,7 @@ public interface UtenteService {
 
     public Utente aggiorna(Utente utenteAggiornato);
 
+    public Optional<Utente> cercaPerId(Long id);
+
 
 }

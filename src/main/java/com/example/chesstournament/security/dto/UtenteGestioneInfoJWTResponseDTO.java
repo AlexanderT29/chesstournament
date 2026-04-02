@@ -1,36 +1,30 @@
 package com.example.chesstournament.security.dto;
 
 import com.example.chesstournament.dto.TorneoDTO;
-import com.example.chesstournament.model.Torneo;
+import com.example.chesstournament.model.StatoUtente;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.time.LocalDate;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class UtenteInfoJWTResponseDTO {
-    private Long id;
+public class UtenteGestioneInfoJWTResponseDTO {
     private String nome;
     private String cognome;
     private String username;
     private LocalDate dataRegistrazione;
+    private StatoUtente stato;
     private List<String> roles;
     private TorneoDTO torneo;
     private Integer eloRating;
     private Double montePremi;
+    private Set<TorneoDTO> torneiCreati;
 
-
-    public UtenteInfoJWTResponseDTO(String nome, String cognome, String username, String email, List<String> roles) {
-        this.nome = nome;
-        this.cognome = cognome;
-        this.username = username;
-        this.roles = roles;
+    public UtenteGestioneInfoJWTResponseDTO() {
     }
 
-
-    public UtenteInfoJWTResponseDTO(String nome, String cognome, String username, LocalDate dataRegistrazione, List<String> roles, TorneoDTO torneo, Integer eloRating, Double montePremi) {
+    public UtenteGestioneInfoJWTResponseDTO(String nome, String cognome, String username, LocalDate dataRegistrazione, List<String> roles, TorneoDTO torneo, Integer eloRating, Double montePremi, Set<TorneoDTO> torneiCreati) {
         this.nome = nome;
         this.cognome = cognome;
         this.username = username;
@@ -39,51 +33,20 @@ public class UtenteInfoJWTResponseDTO {
         this.torneo = torneo;
         this.eloRating = eloRating;
         this.montePremi = montePremi;
+        this.torneiCreati = torneiCreati;
     }
 
-    public UtenteInfoJWTResponseDTO(String nome, String cognome, String username, Double montePremi) {
-        this.nome = nome;
-        this.cognome = cognome;
-        this.username = username;
-        this.montePremi = montePremi;
-    }
-
-    public UtenteInfoJWTResponseDTO(String nome, String cognome, String username) {
-        this.nome = nome;
-        this.cognome = cognome;
-        this.username = username;
-    }
-
-    public UtenteInfoJWTResponseDTO(Long id, String nome, String cognome, String username, LocalDate dataRegistrazione, List<String> roles, TorneoDTO torneo, Integer eloRating, Double montePremi) {
-        this.id = id;
+    public UtenteGestioneInfoJWTResponseDTO(String nome, String cognome, String username, LocalDate dataRegistrazione, StatoUtente stato, List<String> roles, TorneoDTO torneo, Integer eloRating, Double montePremi, Set<TorneoDTO> torneiCreati) {
         this.nome = nome;
         this.cognome = cognome;
         this.username = username;
         this.dataRegistrazione = dataRegistrazione;
+        this.stato = stato;
         this.roles = roles;
         this.torneo = torneo;
         this.eloRating = eloRating;
         this.montePremi = montePremi;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public List<String> getRoles() {
-        return roles;
+        this.torneiCreati = torneiCreati;
     }
 
     public String getNome() {
@@ -102,12 +65,24 @@ public class UtenteInfoJWTResponseDTO {
         this.cognome = cognome;
     }
 
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
     public LocalDate getDataRegistrazione() {
         return dataRegistrazione;
     }
 
     public void setDataRegistrazione(LocalDate dataRegistrazione) {
         this.dataRegistrazione = dataRegistrazione;
+    }
+
+    public List<String> getRoles() {
+        return roles;
     }
 
     public void setRoles(List<String> roles) {
@@ -136,5 +111,21 @@ public class UtenteInfoJWTResponseDTO {
 
     public void setMontePremi(Double montePremi) {
         this.montePremi = montePremi;
+    }
+
+    public Set<TorneoDTO> getTorneiCreati() {
+        return torneiCreati;
+    }
+
+    public void setTorneiCreati(Set<TorneoDTO> torneiCreati) {
+        this.torneiCreati = torneiCreati;
+    }
+
+    public StatoUtente getStato() {
+        return stato;
+    }
+
+    public void setStato(StatoUtente stato) {
+        this.stato = stato;
     }
 }

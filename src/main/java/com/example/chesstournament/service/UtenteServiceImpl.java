@@ -46,4 +46,9 @@ public class UtenteServiceImpl implements UtenteService{
     public Utente aggiorna(Utente utenteAggiornato) {
         return utenteRepository.save(utenteAggiornato);
     }
+
+    @Override
+    public Optional<Utente> cercaPerId(Long id) {
+        return utenteRepository.findById(id);
+    }
 }

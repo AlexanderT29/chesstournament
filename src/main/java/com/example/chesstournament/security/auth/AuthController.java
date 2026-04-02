@@ -71,6 +71,7 @@ public class AuthController {
             return ResponseEntity.ok(bustaSuccesso);
 
         } catch (AuthenticationException authExc) {
+            authExc.printStackTrace();
             System.out.println(body.getUsername() + " " + body.getPassword());
             // Nota: L'eccezione verrà poi catturata dal tuo eventuale @ControllerAdvice
             ResponseBusta<UtenteAuthJWTResponseDTO> bustaErrore = ResponseBusta.error(401, "Credenziali non valide o utente inesistente");
@@ -94,7 +95,7 @@ public class AuthController {
         nuovoUtente.setUsername(body.getUsername());
 
 
-        nuovoUtente.setPassword(passwordEncoder.encode(body.getPassword()));
+        nuovoUtente.setPassword(body.getPassword());
 
 
         nuovoUtente.setDataRegistrazione(LocalDate.now());

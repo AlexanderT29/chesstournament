@@ -6,7 +6,9 @@ import com.example.chesstournament.model.Ruolo;
 import com.example.chesstournament.model.StatoUtente;
 import com.example.chesstournament.model.Utente;
 import com.example.chesstournament.security.dto.ResponseBusta;
+import com.example.chesstournament.security.dto.UtenteGestioneInfoJWTResponseDTO;
 import com.example.chesstournament.security.dto.UtenteInfoJWTResponseDTO;
+import com.example.chesstournament.service.RuoloService;
 import com.example.chesstournament.service.UtenteService;
 import com.example.chesstournament.web.api.exception.Forbidden403Exception;
 import com.example.chesstournament.web.api.exception.NotFound404Exception;
@@ -15,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -23,8 +26,11 @@ public class UtenteController {
 
     private UtenteService service;
 
-    public UtenteController(UtenteService service){
+    private RuoloService ruoloService;
+
+    public UtenteController(UtenteService service, RuoloService ruoloService){
         this.service = service;
+        this.ruoloService = ruoloService;
     }
 
     @GetMapping("/info")
@@ -88,7 +94,7 @@ public class UtenteController {
         return ResponseEntity.ok(ResponseBusta.success(200, responseDTO, "Ricarica effettuata con successo!"));
     }
 
-    @PutMapping("/disabilita/{id}")
+    @DeleteMapping("/disabilita/{id}")
     public ResponseEntity<ResponseBusta<UtenteInfoJWTResponseDTO>> disabilitaUtente(@PathVariable("id") Long id){
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         Utente utenteLoggato = service.cercaPerUsername(username).orElse(null);
@@ -106,6 +112,48 @@ public class UtenteController {
         service.aggiorna(utenteLoggato);
 
         return ResponseEntity.accepted().body(ResponseBusta.success(200, null, "Utente disabilitato con successo"));
+    }
+
+    @PutMapping("/modfica/{id}")
+    public ResponseEntity<ResponseBusta<String>> modificaUtente(@PathVariable("id") Long id,
+                                                                                  @Valid @RequestBody UtenteGestioneInfoJWTResponseDTO body){
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        Utente utenteLoggato = service.cercaPerUsername(username).orElse(null);
+
+        if (utenteLoggato == null) {
+            throw new NotFound404Exception("Utente non trovato.");
+        }
+
+        if(utenteLoggato.getId() != id || !utenteLoggato.getRuoli().contains(Ruolo.ROLE_ADMIN)){
+            throw new Forbidden403Exception("Permessi negati per eseguire questa operazione.");
+        }
+
+        utenteLoggato.setNome(body.getNome());
+        utenteLoggato.setCognome(body.getCognome());
+        utenteLoggato.setUsername(body.getUsername());
+        utenteLoggato.setDataRegistrazione(body.getDataRegistrazione());
+        utenteLoggato.setStato(body.getStato());
+        utenteLoggato.setEloRating(body.getEloRating());
+        utenteLoggato.setMontePremi(body.getMontePremi());
+
+        if (body.getRoles() != null) {
+            List<String> listaRuoli = body.getRoles();
+            List<Ruolo> ruoli = new ArrayList<>();
+            for(String codice: listaRuoli){
+                ruoli.add(ruoloService.cercaPerCodice(codice).orElse(null));
+            }
+
+            utenteLoggato.getRuoli().clear();
+            utenteLoggato.getRuoli().addAll(ruoli);
+        }
+
+
+        service.aggiorna(utenteLoggato);
+
+        ResponseBusta<String> bustaSuccesso = ResponseBusta.success(200, null, "Modifica completata con successo");
+
+        return ResponseEntity.ok(bustaSuccesso);
+
     }
 
 }
