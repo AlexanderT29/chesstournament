@@ -1,7 +1,11 @@
 package com.example.chesstournament.security.dto;
 
 import com.example.chesstournament.dto.TorneoDTO;
+import com.example.chesstournament.dto.UtenteDTO;
+import com.example.chesstournament.model.Ruolo;
+import com.example.chesstournament.model.StatoUtente;
 import com.example.chesstournament.model.Torneo;
+import com.example.chesstournament.model.Utente;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.time.LocalDate;
@@ -22,7 +26,9 @@ public class UtenteInfoJWTResponseDTO {
     private Double montePremi;
 
 
-    public UtenteInfoJWTResponseDTO(String nome, String cognome, String username, String email, List<String> roles) {
+
+
+    public UtenteInfoJWTResponseDTO(String nome, String cognome, String username, List<String> roles) {
         this.nome = nome;
         this.cognome = cognome;
         this.username = username;
@@ -64,6 +70,14 @@ public class UtenteInfoJWTResponseDTO {
         this.torneo = torneo;
         this.eloRating = eloRating;
         this.montePremi = montePremi;
+    }
+
+    public UtenteInfoJWTResponseDTO(Long id, String username, Integer eloRating, Double montePremi){
+        this.id = id;
+        this.username = username;
+        this.eloRating = eloRating;
+        this.montePremi = montePremi;
+
     }
 
     public Long getId() {
@@ -136,5 +150,27 @@ public class UtenteInfoJWTResponseDTO {
 
     public void setMontePremi(Double montePremi) {
         this.montePremi = montePremi;
+    }
+
+    public static UtenteInfoJWTResponseDTO buildDTOFromModel(Utente utenteModel, boolean includeTorneo){
+        UtenteInfoJWTResponseDTO result = new UtenteInfoJWTResponseDTO(
+                utenteModel.getId(),
+                utenteModel.getUsername(),
+                utenteModel.getEloRating(),
+                utenteModel.getMontePremi()
+        );
+
+        if (utenteModel.getDataRegistrazione() != null) {
+            result.setDataRegistrazione(utenteModel.getDataRegistrazione());
+        }
+
+
+        if(includeTorneo) {
+            if (utenteModel.getTorneo() != null) {
+                result.torneo = TorneoDTO.buildTorneoDTOFromModel(utenteModel.getTorneo(), false);
+            }
+        }
+
+        return result;
     }
 }

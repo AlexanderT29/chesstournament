@@ -1,5 +1,7 @@
 package com.example.chesstournament.service;
 
+import com.example.chesstournament.dto.TorneoDTO;
+import com.example.chesstournament.dto.TorneoRicercaDTO;
 import com.example.chesstournament.model.Torneo;
 import com.example.chesstournament.model.Utente;
 
@@ -19,4 +21,8 @@ public interface TorneoService {
     public Torneo aggiorna(Torneo torneo);
 
     public void cancellaTorneo(Long id);
+
+    public Torneo aggiornaTorneo(TorneoDTO torneoDTO, Long id);
+
+    public List<Torneo> ricercaTorneo(TorneoRicercaDTO torneo);
 }

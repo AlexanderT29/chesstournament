@@ -62,6 +62,13 @@ public class CustomExceptionHandler {
         return ResponseEntity.status(500).body(bustaErrore);
     }
 
+    @ExceptionHandler(CustomPlayerException.class)
+    public ResponseEntity<ResponseBusta<String>> handleCustomPlayerException(Exception ex){
+        ex.printStackTrace();
+        ResponseBusta<String> bustaErrore = ResponseBusta.error(400, ex.getMessage());
+        return ResponseEntity.status(400).body(bustaErrore);
+    }
+
 
 
 

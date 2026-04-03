@@ -9,6 +9,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -45,6 +46,8 @@ public class TorneoDTO {
 
     private Set<Long> partecipantiIds;
 
+    private Set<UtenteDTO> partecipantiDettaglio;
+
     public TorneoDTO() {
     }
 
@@ -59,6 +62,14 @@ public class TorneoDTO {
         this.maxGiocatori = maxGiocatori;
     }
 
+    public TorneoDTO(String denominazione, LocalDate dataCreazione, StatoTorneo stato, Integer eloMinimo, Double quotaIscrizione, Integer maxGiocatori) {
+        this.denominazione = denominazione;
+        this.dataCreazione = dataCreazione;
+        this.stato = stato;
+        this.eloMinimo = eloMinimo;
+        this.quotaIscrizione = quotaIscrizione;
+        this.maxGiocatori = maxGiocatori;
+    }
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -93,7 +104,13 @@ public class TorneoDTO {
     public Set<Long> getPartecipantiIds() { return partecipantiIds; }
     public void setPartecipantiIds(Set<Long> partecipantiIds) { this.partecipantiIds = partecipantiIds; }
 
+    public Set<UtenteDTO> getPartecipantiDettaglio() {
+        return partecipantiDettaglio;
+    }
 
+    public void setPartecipantiDettaglio(Set<UtenteDTO> partecipantiDettaglio) {
+        this.partecipantiDettaglio = partecipantiDettaglio;
+    }
 
     public Torneo buildTorneoModel(boolean includeCreatore) {
         Torneo result = new Torneo(
@@ -136,15 +153,39 @@ public class TorneoDTO {
             result.setNumeroIscritti(torneoModel.getPartecipanti().size());
 
             if (includeDettagliPartecipanti) {
-                result.setPartecipantiIds(
-                        torneoModel.getPartecipanti().stream()
-                                .map(Utente::getId)
-                                .collect(Collectors.toSet())
-                );
+
+
+                Set<UtenteDTO> dettagliMappati = torneoModel.getPartecipanti().stream()
+                        .map(utente -> {
+                            UtenteDTO dto = UtenteDTO.buildUtenteDTOFromModel(utente);
+                            dto.setTorneo(null);
+                            dto.setPassword(null);
+                            dto.setRuoliIds(null);
+                            dto.setMontePremi(null);
+                            return dto;
+                        })
+                        .collect(Collectors.toSet());
+                result.setPartecipantiDettaglio(dettagliMappati);
             }
         } else {
             result.setNumeroIscritti(0);
         }
+
+        return result;
+    }
+
+    public Torneo buildTorneoNuovoModel(Utente utenteLoggato){
+        Torneo result = new Torneo(
+                this.denominazione,
+                this.eloMinimo,
+                this.quotaIscrizione,
+                this.maxGiocatori
+        );
+        result.setId(this.id);
+        result.setStato(StatoTorneo.APERTURA);
+        result.setDataCreazione(LocalDate.now());
+        result.setUtenteCreazione(utenteLoggato);
+        result.setPartecipanti(new HashSet<>(0));
 
         return result;
     }

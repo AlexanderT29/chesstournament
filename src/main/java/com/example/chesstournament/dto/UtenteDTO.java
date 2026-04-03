@@ -1,6 +1,5 @@
 package com.example.chesstournament.dto;
 
-
 import com.example.chesstournament.model.Ruolo;
 import com.example.chesstournament.model.StatoUtente;
 import com.example.chesstournament.model.Torneo;
@@ -44,7 +43,8 @@ public class UtenteDTO {
 
     private Long[] ruoliIds;
 
-    private Long torneoId;
+    // Sostituito Long torneoId con TorneoDTO
+    private TorneoDTO torneo;
 
     public UtenteDTO() {
     }
@@ -58,7 +58,6 @@ public class UtenteDTO {
         this.eloRating = eloRating;
         this.montePremi = montePremi;
     }
-
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -90,10 +89,8 @@ public class UtenteDTO {
     public Long[] getRuoliIds() { return ruoliIds; }
     public void setRuoliIds(Long[] ruoliIds) { this.ruoliIds = ruoliIds; }
 
-    public Long getTorneoId() { return torneoId; }
-    public void setTorneoId(Long torneoId) { this.torneoId = torneoId; }
-
-
+    public TorneoDTO getTorneo() { return torneo; }
+    public void setTorneo(TorneoDTO torneo) { this.torneo = torneo; }
 
     public Utente buildUtenteModel(boolean includeRuoli) {
         Utente result = new Utente(this.nome, this.cognome, this.username, this.password,
@@ -108,9 +105,10 @@ public class UtenteDTO {
             result.setRuoli(ruoli);
         }
 
-        if (this.torneoId != null) {
+        // Controllo se il DTO del torneo è presente e ha un ID
+        if (this.torneo != null && this.torneo.getId() != null) {
             Torneo t = new Torneo();
-            t.setId(this.torneoId);
+            t.setId(this.torneo.getId());
             result.setTorneo(t);
         }
 
@@ -136,10 +134,20 @@ public class UtenteDTO {
             result.ruoliIds = utenteModel.getRuoli().stream().map(Ruolo::getId).toArray(Long[]::new);
         }
 
+        // Sfruttiamo il metodo esistente in TorneoDTO passando 'false' per evitare i partecipanti
         if (utenteModel.getTorneo() != null) {
-            result.torneoId = utenteModel.getTorneo().getId();
+            result.torneo = TorneoDTO.buildTorneoDTOFromModel(utenteModel.getTorneo(), false);
         }
 
+        return result;
+    }
+
+    public Utente buildNuovoUtenteModel() {
+        Utente result = new Utente(this.nome, this.cognome, this.username, this.password,
+                this.dataRegistrazione);
+        result.setMontePremi(0.0);
+        result.setEloRating(0);
+        result.setStato(StatoUtente.ATTIVO);
         return result;
     }
 }

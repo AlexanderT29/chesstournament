@@ -54,22 +54,12 @@ public class TorneoController {
             throw new Forbidden403Exception("Non hai i permessi per fare questa operazione!");
         }
 
-        Torneo nuovoTorneo = new Torneo();
+
         Torneo torneoDaCreare = torneoService.cercaPerDenominazione(body.getDenominazione()).orElse(null);
         if( torneoDaCreare != null){
             throw new BadRequest400Exception("Non puoi creare un Torneo con la stessa denominazione di un Torneo esistente!");
         }
-        nuovoTorneo.setDenominazione(body.getDenominazione());
-        nuovoTorneo.setDataCreazione(LocalDate.now());
-        nuovoTorneo.setStato(StatoTorneo.APERTURA);
-        nuovoTorneo.setEloMinimo(body.getEloMinimo());
-        nuovoTorneo.setQuotaIscrizione(body.getQuotaIscrizione());
-        nuovoTorneo.setMaxGiocatori(body.getMaxGiocatori());
-
-        Set<Utente> partecipanti = new HashSet<>(0);
-
-        nuovoTorneo.setPartecipanti(partecipanti);
-        nuovoTorneo.setUtenteCreazione(utenteLoggato);
+        Torneo nuovoTorneo = body.buildTorneoNuovoModel(utenteLoggato);
 
         torneoService.inserisciNuovo(nuovoTorneo);
 
@@ -157,15 +147,8 @@ public class TorneoController {
             throw new Forbidden403Exception("Non puoi modificare un torneo se ha dei partecipanti");
         }
 
-        torneoCercato.setDenominazione(body.getDenominazione());
-        torneoCercato.setStato(body.getStato());
-        torneoCercato.setQuotaIscrizione(body.getQuotaIscrizione());
-        torneoCercato.setMaxGiocatori(body.getMaxGiocatori());
-        torneoCercato.setEloMinimo(body.getEloMinimo());
-        torneoCercato.setUtenteCreazione(utenteService.cercaPerId(body.getUtenteCreazioneId())
-                .orElseThrow(() -> new NotFound404Exception("Utente non trovato!")));
 
-        torneoService.aggiorna(torneoCercato);
+        torneoCercato = torneoService.aggiornaTorneo(body, id);
 
         TorneoDTO payload = TorneoDTO.buildTorneoDTOFromModel(torneoCercato, true);
 

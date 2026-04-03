@@ -10,18 +10,17 @@ import com.example.chesstournament.security.dto.ResponseBusta;
 import com.example.chesstournament.security.dto.UtenteGestioneInfoJWTResponseDTO;
 import com.example.chesstournament.security.dto.UtenteInfoJWTResponseDTO;
 import com.example.chesstournament.service.RuoloService;
+import com.example.chesstournament.service.TorneoService;
 import com.example.chesstournament.service.UtenteService;
 import com.example.chesstournament.web.api.exception.Forbidden403Exception;
 import com.example.chesstournament.web.api.exception.NotFound404Exception;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -33,10 +32,13 @@ public class AdminController {
 
     private RuoloService ruoloService;
 
-    public AdminController(UtenteService service, RuoloService ruoloService){
+    private TorneoService torneoService;
+
+    public AdminController(UtenteService service, RuoloService ruoloService, TorneoService torneoService){
 
         this.service = service;
         this.ruoloService = ruoloService;
+        this.torneoService = torneoService;
     }
 
     @GetMapping("/utenti")
@@ -44,30 +46,7 @@ public class AdminController {
 
         List<Utente> utenti = service.listAllUtenti();
 
-        List<UtenteInfoJWTResponseDTO> utentiResponse = utenti.stream()
-                .map(utente -> {
-                    System.out.println(utente.getId());
-                    List<String> roles = utente.getRuoli().stream()
-                            .map(Ruolo::getCodice)
-                            .toList();
-                    TorneoDTO torneoDTO = null;
-                    if (utente.getTorneo() != null) {
-                        torneoDTO = TorneoDTO.buildTorneoDTOFromModel(utente.getTorneo(), false);
-                    }
-                    return new UtenteInfoJWTResponseDTO(
-                            utente.getId(),
-                            utente.getNome(),
-                            utente.getCognome(),
-                            utente.getUsername(),
-                            utente.getDataRegistrazione(),
-                            roles,
-                            torneoDTO,
-                            utente.getEloRating(),
-                            utente.getMontePremi()
-                    );
-
-                })
-                .toList();
+        List<UtenteInfoJWTResponseDTO> utentiResponse = service.convertiInUtenteInfoJWT(utenti);
 
         return ResponseEntity.ok(ResponseBusta.success(200, utentiResponse, "Lista utenti ottenuta con successo"));
     }
@@ -77,9 +56,7 @@ public class AdminController {
 
         Utente utente = service.cercaPerId(id).orElseThrow(() -> new NotFound404Exception("Utente non trovato"));
 
-        List<String> roles = utente.getRuoli().stream()
-                .map(Ruolo::getCodice)
-                .toList();
+        List<String> roles = ruoloService.convertiInCodiceListaRuoli(utente);
 
         TorneoDTO torneoDTO = null;
         if (utente.getTorneo() != null) {
@@ -115,25 +92,15 @@ public class AdminController {
             return ResponseEntity.badRequest().body(bustaErrore);
         }
 
+        Utente nuovoUtente = body.buildNuovoUtenteModel();
 
-        Utente nuovoUtente = new Utente();
-        nuovoUtente.setNome(body.getNome());
-        nuovoUtente.setCognome(body.getCognome());
-        nuovoUtente.setUsername(body.getUsername());
-
-
-        nuovoUtente.setPassword(body.getPassword());
-
-
-        nuovoUtente.setDataRegistrazione(LocalDate.now());
-        nuovoUtente.setStato(StatoUtente.ATTIVO);
-        nuovoUtente.setEloRating(0);
-        nuovoUtente.setMontePremi(0.0);
-
-        List<Long> listaRuoliIds = Arrays.asList(body.getRuoliIds());
-        List<Ruolo> ruoliTrovati = ruoloService.cercaTuttiPerId(listaRuoliIds);
+        List<Ruolo> ruoliTrovati = ruoloService.cercaTuttiPerId(Arrays.asList(body.getRuoliIds()));
 
         nuovoUtente.getRuoli().addAll(ruoliTrovati);
+
+        if(nuovoUtente.getRuoli().contains(Ruolo.ROLE_ADMIN) || nuovoUtente.getRuoli().contains(Ruolo.ROLE_ORGANIZER)){
+            nuovoUtente.setTorneiCreati(new HashSet<>(0));
+        }
 
 
         service.inserisciNuovo(nuovoUtente);
@@ -154,32 +121,8 @@ public class AdminController {
             throw new Forbidden403Exception("Il nuovo username è già occupato");
         }
 
-        utenteEsistente.setNome(body.getNome());
-        utenteEsistente.setCognome(body.getCognome());
-        utenteEsistente.setUsername(body.getUsername());
-        utenteEsistente.setDataRegistrazione(body.getDataRegistrazione());
-        utenteEsistente.setStato(body.getStato());
-        utenteEsistente.setEloRating(body.getEloRating());
-        utenteEsistente.setMontePremi(body.getMontePremi());
+        utenteEsistente = service.salvaUtenteDaDTO(body, id);
 
-        if (body.getRoles() != null) {
-            List<String> listaRuoli = body.getRoles();
-            List<Ruolo> ruoli = new ArrayList<>();
-            for(String codice: listaRuoli){
-                ruoli.add(ruoloService.cercaPerCodice(codice).orElse(null));
-            }
-
-            utenteEsistente.getRuoli().clear();
-            utenteEsistente.getRuoli().addAll(ruoli);
-        }
-
-        if (body.getTorneiCreati() != null){
-            Set<Torneo> torneiCreati = body.getTorneiCreati().stream()
-                    .map(torneoDTO -> torneoDTO.buildTorneoModel(false))
-                    .collect(Collectors.toSet());
-            utenteEsistente.setTorneiCreati(torneiCreati);
-        }
-        service.aggiorna(utenteEsistente);
 
         ResponseBusta<String> bustaSuccesso = ResponseBusta.success(200, null, "Modifica completata con successo");
 
@@ -195,6 +138,33 @@ public class AdminController {
         service.aggiorna(utenteEsistente);
 
         ResponseBusta<String> bustaSuccesso = ResponseBusta.success(200, null, "Utente disabilitato con successo");
+
+        return ResponseEntity.ok(bustaSuccesso);
+    }
+
+    @PutMapping("/torneo/{id}")
+    public ResponseEntity<ResponseBusta<TorneoDTO>> modificaTorneo(@PathVariable("id") Long id, @RequestBody TorneoDTO body){
+
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        Utente utenteLoggato = service.cercaPerUsername(username)
+                .orElseThrow(() -> new NotFound404Exception("Utente non trovato!"));
+
+        List<String> codiciRuoli = utenteLoggato.getRuoli().stream()
+                .map(Ruolo::getCodice)
+                .toList();
+
+        if(!codiciRuoli.contains(Ruolo.ROLE_ORGANIZER) &&
+                !codiciRuoli.contains(Ruolo.ROLE_ADMIN)){
+            throw new Forbidden403Exception("Non hai i permessi per fare questa operazione!");
+        }
+
+
+        Torneo torneoCercato = torneoService.aggiornaTorneo(body, id);
+
+        TorneoDTO payload = TorneoDTO.buildTorneoDTOFromModel(torneoCercato, true);
+
+        ResponseBusta<TorneoDTO> bustaSuccesso = ResponseBusta.success(200, payload , "Torneo Modificato con successo");
 
         return ResponseEntity.ok(bustaSuccesso);
     }

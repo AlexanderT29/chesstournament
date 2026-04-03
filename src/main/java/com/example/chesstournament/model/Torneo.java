@@ -63,6 +63,13 @@ public class Torneo {
         this.utenteCreazione = utenteCreazione;
     }
 
+    public Torneo(String denominazione, Integer eloMinimo, Double quotaIscrizione, Integer maxGiocatori) {
+        this.denominazione = denominazione;
+        this.eloMinimo = eloMinimo;
+        this.quotaIscrizione = quotaIscrizione;
+        this.maxGiocatori = maxGiocatori;
+    }
+
     public Long getId() {
         return id;
     }
