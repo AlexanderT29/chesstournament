@@ -255,6 +255,6 @@ public class UtenteServiceImpl implements UtenteService{
 
         Utente utenteSalvato = utenteRepository.save(utenteLoggato);
 
-        return new RisultatoPartitaDTO(utenteSalvato, esitoTesto);
+        return new RisultatoPartitaDTO(utenteSalvato.getMontePremi(), esitoTesto, delta);
     }
 }

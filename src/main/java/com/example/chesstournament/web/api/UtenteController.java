@@ -218,12 +218,11 @@ public class UtenteController {
     }
 
     @PostMapping("/gioca/{idTorneo}")
-    public ResponseEntity<ResponseBusta<UtenteInfoJWTResponseDTO>> giocaPartita(@PathVariable("idTorneo") Long idTorneo){
+    public ResponseEntity<ResponseBusta<RisultatoPartitaDTO>> giocaPartita(@PathVariable("idTorneo") Long idTorneo){
 
         RisultatoPartitaDTO risultato = service.giocaPartita(idTorneo);
-        UtenteInfoJWTResponseDTO utenteResponse = UtenteInfoJWTResponseDTO.buildDTOFromModel(risultato.getUtenteAggiornato(), false);
 
-        return ResponseEntity.ok(ResponseBusta.success(200, utenteResponse, risultato.getMessaggioEsito()));
+        return ResponseEntity.ok(ResponseBusta.success(200, risultato, risultato.getMessaggioEsito()));
     }
 
 }
